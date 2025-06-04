@@ -297,8 +297,13 @@ if __name__=="__main__":
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    local_rank = int(os.environ["LOCAL_RANK"])
+    torch.cuda.set_device(local_rank)
+    device = torch.device(f"cuda:{local_rank}")
+
     model = MyNet(n_classes=10).to(device)
-    model = nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
+    model = nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
 
     optimizer = torch.optim.SGD(model.parameters(), lr=LR, weight_decay=0.01, momentum=0.9,nesterov=True)
     loss_fn = nn.CrossEntropyLoss().to(device)
