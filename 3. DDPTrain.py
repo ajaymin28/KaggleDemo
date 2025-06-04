@@ -333,3 +333,5 @@ if __name__=="__main__":
 
         # wandb.log({"accuracy": acc, "loss": tt_loss, "v_loss": tv_loss, "v_acc": vacc})
         # print(f"Epoch[{epoch}/{EPOCHS}] loss: {tt_loss:.4f} acc:{acc:.2f} vloss: {tv_loss:.4f} vacc:{vacc:.2f}")
+
+    dist.destroy_process_group()
