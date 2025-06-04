@@ -10,6 +10,9 @@ from utils.models import MyNet
 import wandb
 import os
 
+from utils.utilities import get_args_parser, init_distributed_mode, get_world_size,get_rank
+import argparse
+from pathlib import Path
 import torch.distributed as dist
 
 
@@ -215,17 +218,13 @@ def step(model, dataset, loss_fn, optimizer=None, isVal=False):
 
 if __name__=="__main__":
 
-    from utils.utilities import get_args_parser, init_distributed_mode
-    import argparse
-    from pathlib import Path
 
     parser = argparse.ArgumentParser('PytorchHandsOn', parents=[get_args_parser()])
     args = parser.parse_args()
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
 
-
-    os.environ['MASTER_ADDR'] = '127.0.0.1'
-    os.environ['MASTER_PORT'] = '29507'
+    # os.environ['MASTER_ADDR'] = '127.0.0.1'
+    # os.environ['MASTER_PORT'] = '29507'
     # os.environ["GLOO_USE_LIBUV"] = "0"
     # os.environ["USE_LIBUV"] = "0"
 
@@ -234,8 +233,6 @@ if __name__=="__main__":
     EPOCHS = args.epochs
     LR = args.lr
     BATCH = args.batch_size_per_gpu
-
-    from utils.utilities import get_world_size,get_rank
 
     world_size = get_world_size()
     num_workers = min(8, os.cpu_count() // world_size)
@@ -265,7 +262,6 @@ if __name__=="__main__":
     train_ds, val_ds = torch.utils.data.random_split(dataset,[train_samples,val_samples])
     str_classes = dataset.classes
     # # t_str_classes = test_dataset.classes
-
 
 
     sampler = torch.utils.data.DistributedSampler(train_ds, shuffle=True)
