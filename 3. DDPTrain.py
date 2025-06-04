@@ -44,7 +44,7 @@ def step_val(model, dataset, loss_fn, device):
 
         # print(f"Val processed {idx}/{len(dataset)}")
 
-    # torch.cuda.synchronize()
+    torch.cuda.synchronize()
 
     # Aggregate metrics across all processes (DDP)
     total_loss_tensor = torch.tensor(total_loss, device=device)
@@ -169,7 +169,7 @@ def step_train(model, dataset, loss_fn, optimizer, device):
         total_correct += (preds.argmax(dim=1) == labels).sum().item()
         total_samples += batch_size
 
-    # torch.cuda.synchronize()
+    torch.cuda.synchronize()
     # DDP: Aggregate metrics
     total_loss_tensor = torch.tensor(total_loss, device=device)
     total_correct_tensor = torch.tensor(total_correct, device=device)
@@ -301,7 +301,7 @@ if __name__=="__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    local_rank = int(os.environ["LOCAL_RANK"])
+    local_rank = get_rank()
     torch.cuda.set_device(local_rank)
     device = torch.device(f"cuda:{local_rank}")
 
