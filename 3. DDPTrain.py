@@ -44,7 +44,7 @@ def step_val(model, dataset, loss_fn, device):
 
         # print(f"Val processed {idx}/{len(dataset)}")
 
-    torch.cuda.synchronize()
+    # torch.cuda.synchronize()
 
     # Aggregate metrics across all processes (DDP)
     total_loss_tensor = torch.tensor(total_loss, device=device)
@@ -169,7 +169,7 @@ def step_train(model, dataset, loss_fn, optimizer, device):
         total_correct += (preds.argmax(dim=1) == labels).sum().item()
         total_samples += batch_size
 
-    torch.cuda.synchronize()
+    # torch.cuda.synchronize()
     # DDP: Aggregate metrics
     total_loss_tensor = torch.tensor(total_loss, device=device)
     total_correct_tensor = torch.tensor(total_correct, device=device)
@@ -238,7 +238,7 @@ if __name__=="__main__":
     BATCH = args.batch_size_per_gpu
 
     world_size = get_world_size()
-    num_workers = min(8, os.cpu_count() // world_size)
+    num_workers = min(2, os.cpu_count() // world_size)
     # num_workers = 0
 
     # print(f"DDP init: rank {rank}, local_rank {local_rank}, world_size {world_size} workers: {num_workers}")
@@ -278,10 +278,10 @@ if __name__=="__main__":
     )
 
 
-    # val_sampler = torch.utils.data.DistributedSampler(val_ds, shuffle=False)
+    val_sampler = torch.utils.data.DistributedSampler(val_ds, shuffle=False)
     val_ds = torch.utils.data.DataLoader(
         val_ds,
-        # sampler=val_sampler,
+        sampler=val_sampler,
         batch_size=BATCH,
         num_workers=num_workers,
         pin_memory=True,
