@@ -278,10 +278,10 @@ if __name__=="__main__":
     )
 
 
-    val_sampler = torch.utils.data.DistributedSampler(val_ds, shuffle=False)
+    # val_sampler = torch.utils.data.DistributedSampler(val_ds, shuffle=False)
     val_ds = torch.utils.data.DataLoader(
         val_ds,
-        sampler=val_sampler,
+        # sampler=val_sampler,
         batch_size=BATCH,
         num_workers=num_workers,
         pin_memory=True,
@@ -289,15 +289,15 @@ if __name__=="__main__":
     )
 
 
-    test_sampler = torch.utils.data.DistributedSampler(test_ds, shuffle=False)
-    test_ds = torch.utils.data.DataLoader(
-        test_ds,
-        sampler=test_sampler,
-        batch_size=BATCH,
-        num_workers=1,
-        pin_memory=True,
-        drop_last=True,
-    )
+    # test_sampler = torch.utils.data.DistributedSampler(test_ds, shuffle=False)
+    # test_ds = torch.utils.data.DataLoader(
+    #     test_ds,
+    #     sampler=test_sampler,
+    #     batch_size=BATCH,
+    #     num_workers=1,
+    #     pin_memory=True,
+    #     drop_last=True,
+    # )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
