@@ -319,6 +319,7 @@ if __name__=="__main__":
     #     },
     # )
     
+    tstart = time.perf_counter()
     for epoch in range(EPOCHS):
         start = time.perf_counter()
         train_ds.sampler.set_epoch(epoch)
@@ -334,9 +335,12 @@ if __name__=="__main__":
 
         end = time.perf_counter()
         if dist.get_rank() == 0:
-            print(f"Epoch[{epoch}/{EPOCHS}] train_loss: {train_loss:.4f} acc:{train_acc:.2f} val_loss: {val_loss:.4f} val_acc:{val_acc:.2f} Took:{end-start:.2f}s")
+            print(f"Epoch[{epoch+1}/{EPOCHS}] train_loss: {train_loss:.4f} acc:{train_acc:.2f} val_loss: {val_loss:.4f} val_acc:{val_acc:.2f} Took:{end-start:.2f}s")
 
         # wandb.log({"accuracy": acc, "loss": tt_loss, "v_loss": tv_loss, "v_acc": vacc})
         # print(f"Epoch[{epoch}/{EPOCHS}] loss: {tt_loss:.4f} acc:{acc:.2f} vloss: {tv_loss:.4f} vacc:{vacc:.2f}")
 
+    tend = time.perf_counter()
+    print(f"Completed in :{tend-tstart:.2f}s")
+    
     dist.destroy_process_group()
