@@ -2,6 +2,11 @@ import os
 from os import listdir
 import random
 import glob
+import torch
+import torch.distributed as dist
+import sys
+
+DEBUG = False
 
 def getrandomIndexesForImages(gallery_image_count=10, query_image_count=5, max_idx_of_images=150):
     """
@@ -67,3 +72,148 @@ def getImagePaths(gallery_images_path, query_images_path, gallery_image_count=10
             images_paths[cls_name]["query"].append(class_images_paths_q[que_idx])
             
     return images_paths
+
+
+"""
+Copied from 
+
+https://github.com/ajaymin28/DinIE/blob/main/utils2/utils.py
+
+"""
+
+def is_dist_avail_and_initialized():
+    if not dist.is_available():
+        return False
+    if not dist.is_initialized():
+        return False
+    return True
+
+
+def get_world_size():
+    if not is_dist_avail_and_initialized():
+        return 1
+    return dist.get_world_size()
+
+
+def get_rank():
+    if not is_dist_avail_and_initialized():
+        return 0
+    return dist.get_rank()
+
+
+def is_main_process():
+    return get_rank() == 0
+
+
+def save_on_master(*args, **kwargs):
+    if is_main_process():
+        torch.save(*args, **kwargs)
+
+
+def setup_for_distributed(is_master):
+    """
+    This function disables printing when not in master process
+    """
+    import builtins as __builtin__
+    builtin_print = __builtin__.print
+
+    def print(*args, **kwargs):
+        force = kwargs.pop('force', False)
+        if is_master or force:
+            builtin_print(*args, **kwargs)
+
+    __builtin__.print = print
+
+def init_distributed_mode(args):
+    # launched with torch.distributed.launch
+    if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
+        args.rank = int(os.environ["RANK"])
+        args.world_size = int(os.environ['WORLD_SIZE'])
+        args.gpu = int(os.environ['LOCAL_RANK'])
+    # launched with submitit on a slurm cluster
+    elif 'SLURM_PROCID' in os.environ:
+        args.rank = int(os.environ['SLURM_PROCID'])
+        args.gpu = args.rank % torch.cuda.device_count()
+        args.world_size = get_world_size()
+        os.environ['MASTER_ADDR'] = '127.0.0.1'
+        os.environ['MASTER_PORT'] = '29501'
+    # launched naively with `python main_dino.py`
+    # we manually add MASTER_ADDR and MASTER_PORT to env variables
+    elif torch.cuda.is_available():
+        print('Will run the code on one GPU.')
+        args.rank, args.gpu, args.world_size = 0, 0, 1
+        os.environ['MASTER_ADDR'] = '127.0.0.1'
+        os.environ['MASTER_PORT'] = '29501'
+    else:
+        print('Does not support training without GPU.')
+        sys.exit(1)
+
+    dist.init_process_group(
+        backend="nccl",
+        # backend="gloo",
+        init_method=args.dist_url,
+        world_size=args.world_size,
+        rank=args.rank,
+    )
+
+    torch.cuda.set_device(args.gpu)
+    print('| distributed init (rank {}): {}'.format(
+        args.rank, args.dist_url), flush=True)
+    dist.barrier()
+    setup_for_distributed(args.rank == 0)
+
+
+import argparse
+
+def bool_flag(s):
+    """
+    Parse boolean arguments from the command line.
+    """
+    FALSY_STRINGS = {"off", "false", "0"}
+    TRUTHY_STRINGS = {"on", "true", "1"}
+    if s.lower() in FALSY_STRINGS:
+        return False
+    elif s.lower() in TRUTHY_STRINGS:
+        return True
+    else:
+        raise argparse.ArgumentTypeError("invalid value for a boolean flag")
+
+def get_args_parser():
+    parser = argparse.ArgumentParser('PytorchHandsOn', add_help=False)
+
+
+    # Training/Optimization parameters
+    parser.add_argument('--use_fp16', type=bool_flag, default=True, help="""Whether or not
+        to use half precision for training. Improves training time and memory requirements,
+        but can provoke instability and slight decay of performance. We recommend disabling
+        mixed precision if the loss is unstable, if reducing the patch size or if training with bigger ViTs.""")
+    parser.add_argument('--weight_decay', type=float, default=0.04, help="""Initial value of the
+        weight decay. With ViT, a smaller value at the beginning of training works well.""")
+    parser.add_argument('--batch_size_per_gpu', default=256, type=int,
+        help='Per-GPU batch-size : number of distinct images loaded on one GPU.')
+    parser.add_argument('--epochs', default=10, type=int, help='Number of epochs of training.')
+    parser.add_argument("--lr", default=0.01, type=float, help="""Learning rate at the end of
+        linear warmup (highest LR used during training). The learning rate is linearly scaled
+        with the batch size, and specified here for a reference batch size of 256.""")
+    parser.add_argument('--optimizer', default='sgd', type=str,
+        choices=['adamw', 'sgd', 'lars'], help="""Type of optimizer. We recommend using adamw with ViTs.""")
+
+    # Misc
+    parser.add_argument('--data_path', default='./dataset', type=str,
+        help='Please specify path to the ImageNet training data.')
+    parser.add_argument('--output_dir', default="./output", type=str, help='Path to save logs and checkpoints.')
+    parser.add_argument('--saveckp_freq', default=20, type=int, help='Save checkpoint every x epochs.')
+    parser.add_argument('--seed', default=42, type=int, help='Random seed.')
+    parser.add_argument('--num_workers', default=4, type=int, help='Number of data loading workers per GPU.')
+    parser.add_argument("--dist_url", default="env://", type=str, help="""url used to set up
+        distributed training; see https://pytorch.org/docs/stable/distributed.html""")
+    # parser.add_argument('--port', default=29507, type=int, help='Port used for Dist training')
+    return parser
+
+    
+"""
+Copied from ENDs
+
+https://github.com/ajaymin28/DinIE/blob/main/utils2/utils.py
+
+"""
