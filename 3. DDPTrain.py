@@ -42,7 +42,9 @@ def step_val(model, dataset, loss_fn, device):
         total_correct += (preds.argmax(dim=1) == labels).sum().item()
         total_samples += batch_size
 
-        print(f"Val processed {idx}/{len(dataset)}")
+        # print(f"Val processed {idx}/{len(dataset)}")
+
+    # torch.cuda.synchronize()
 
     # Aggregate metrics across all processes (DDP)
     total_loss_tensor = torch.tensor(total_loss, device=device)
@@ -167,6 +169,7 @@ def step_train(model, dataset, loss_fn, optimizer, device):
         total_correct += (preds.argmax(dim=1) == labels).sum().item()
         total_samples += batch_size
 
+    # torch.cuda.synchronize()
     # DDP: Aggregate metrics
     total_loss_tensor = torch.tensor(total_loss, device=device)
     total_correct_tensor = torch.tensor(total_correct, device=device)
@@ -316,7 +319,8 @@ if __name__=="__main__":
     #     },
     # )
     
-    for epoch in tqdm(range(EPOCHS)):
+    for epoch in range(EPOCHS):
+        start = time.perf_counter()
         train_ds.sampler.set_epoch(epoch)
         val_ds.sampler.set_epoch(epoch)
 
@@ -325,11 +329,12 @@ if __name__=="__main__":
         # acc, tt_loss, optimizer = step(model, train_ds, loss_fn, optimizer=optimizer, isVal=False)
         # vacc, tv_loss, _ = step(model, val_ds, loss_fn, isVal=True)
 
-        train_acc, train_loss, optimizer = step_train_profiled(model, train_ds, loss_fn, optimizer, device)
+        train_acc, train_loss, optimizer = step_train(model, train_ds, loss_fn, optimizer, device)
         val_acc, val_loss = step_val(model, val_ds, loss_fn, device)
 
+        end = time.perf_counter()
         if dist.get_rank() == 0:
-            print(f"Epoch[{epoch}/{EPOCHS}] train_loss: {train_loss:.4f} acc:{train_acc:.2f} val_loss: {val_loss:.4f} val_acc:{val_acc:.2f}")
+            print(f"Epoch[{epoch}/{EPOCHS}] train_loss: {train_loss:.4f} acc:{train_acc:.2f} val_loss: {val_loss:.4f} val_acc:{val_acc:.2f} Took:{end-start:.2f}s")
 
         # wandb.log({"accuracy": acc, "loss": tt_loss, "v_loss": tv_loss, "v_acc": vacc})
         # print(f"Epoch[{epoch}/{EPOCHS}] loss: {tt_loss:.4f} acc:{acc:.2f} vloss: {tv_loss:.4f} vacc:{vacc:.2f}")
