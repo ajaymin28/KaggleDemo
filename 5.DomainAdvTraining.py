@@ -155,7 +155,7 @@ if __name__=="__main__":
     
     args = parse_args()
     cfg = load_config(args)
-    cfg.n_classes = 10
+    print(cfg)
 
     f_labels = cfg.domainnet_classes[:cfg.n_classes]
     print(f_labels)
