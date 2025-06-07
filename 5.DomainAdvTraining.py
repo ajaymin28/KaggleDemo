@@ -201,7 +201,14 @@ if __name__=="__main__":
         wandb.login(key=wandb_api_key)
 
     isWandbLoggedIn = is_wandb_logged_in()
-    print(f"wandb logged in? [{isWandbLoggedIn}]")
+    if isWandbLoggedIn:
+        print(f"wandb logged in...")
+        
+        wandb.init(
+            project=cfg.wandb_project,          # your project name
+            config=cfg.model_dump()             # log all config parameters
+        )
+    
 
     dataset_train = DomainNetDataset(
         root_dir=cfg.data_path,
