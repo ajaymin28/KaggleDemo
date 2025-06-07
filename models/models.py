@@ -3,9 +3,6 @@ import torch
 from models.DomainAdv import DomainDiscriminator
 from utils.config import ModelConfig
 
-
-DEBUG = ModelConfig.DEBUG
-
 class MyNet(nn.Module):
     def __init__(self, config: ModelConfig):
         super(MyNet, self).__init__()
@@ -15,6 +12,7 @@ class MyNet(nn.Module):
         image_size = config.image_size
         num_domains = config.num_domains
         self.adv_training = config.adv_training
+        self.DEBUG = config.DEBUG
 
         self.conv_model = nn.Sequential(
             nn.Conv2d(3,16,(3,3), stride=(1,1), padding='valid'),
@@ -56,23 +54,23 @@ class MyNet(nn.Module):
 
     def getheadFeatures(self, x):
         head_f = self.features_head(x)
-        if DEBUG: print(f"head_f shape: {head_f.shape}")
+        if self.DEBUG: print(f"head_f shape: {head_f.shape}")
         return head_f
 
     
     def getClassification(self, x):
         cls_h = self.cls_head(x)
-        if DEBUG: print(f"cls_h shape: {cls_h.shape}")
+        if self.DEBUG: print(f"cls_h shape: {cls_h.shape}")
         return cls_h
     
     def getConv(self, x):
         conv_out = self.conv_model(x)
-        if DEBUG: print(f"conv_out shape: {conv_out.shape}")
+        if self.DEBUG: print(f"conv_out shape: {conv_out.shape}")
         return self.conv_model(x)
 
     
     def forward(self, x,alpha=1):
-        if DEBUG: print(f"input shape: {x.shape}")
+        if self.DEBUG: print(f"input shape: {x.shape}")
         domain_cls_pred, domain_features = [],[]
 
         x = self.getConv(x)
