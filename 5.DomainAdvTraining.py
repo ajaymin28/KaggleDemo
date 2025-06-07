@@ -196,14 +196,20 @@ if __name__=="__main__":
         if cfg.wandb_apikey!="":
             wandb.login(key=cfg.wandb_apikey)
         else:
-            print("WANDB_API_KEY not found in config/args")
+            try:
+                from kaggle_secrets import UserSecretsClient
+                user_secrets = UserSecretsClient()
+                wandb_api_key = user_secrets.get_secret("WANDB_API_KEY")
+                wandb.login(key=wandb_api_key)
+            except:
+                print("WANDB_API_KEY not found in config/args/kaggle sec")
     else:
         wandb.login(key=wandb_api_key)
 
     isWandbLoggedIn = is_wandb_logged_in()
     if isWandbLoggedIn:
         print(f"wandb logged in...")
-        
+
         wandb.init(
             project=cfg.wandb_project,          # your project name
             config=cfg.model_dump()             # log all config parameters
