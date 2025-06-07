@@ -194,10 +194,7 @@ if __name__=="__main__":
     domain_loss = nn.CrossEntropyLoss()
     image_cls_loss = nn.CrossEntropyLoss()
 
-    model = MyNet(n_classes=cfg.n_classes, 
-                  image_size=cfg.image_size,
-                  num_domains=cfg.num_domains, 
-                  adv_training=cfg.adv_training).to(device)
+    model = MyNet(cfg).to(device)
     
     optimizer = Adam(model.parameters(), lr=cfg.learning_rate)
     scaler = GradScaler()
