@@ -5,8 +5,21 @@ import glob
 import torch
 import torch.distributed as dist
 import sys
+from functools import wraps
+import time
 
 DEBUG = False
+
+
+def timeit(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"Function '{func.__name__}' executed in {end - start:.4f} seconds")
+        return result
+    return wrapper
 
 def getrandomIndexesForImages(gallery_image_count=10, query_image_count=5, max_idx_of_images=150):
     """
@@ -189,7 +202,7 @@ def get_args_parser():
         mixed precision if the loss is unstable, if reducing the patch size or if training with bigger ViTs.""")
     parser.add_argument('--weight_decay', type=float, default=0.04, help="""Initial value of the
         weight decay. With ViT, a smaller value at the beginning of training works well.""")
-    parser.add_argument('--batch_size_per_gpu', default=256, type=int,
+    parser.add_argument('--batch_size_per_gpu', default=512, type=int,
         help='Per-GPU batch-size : number of distinct images loaded on one GPU.')
     parser.add_argument('--epochs', default=10, type=int, help='Number of epochs of training.')
     parser.add_argument("--lr", default=0.01, type=float, help="""Learning rate at the end of
@@ -204,7 +217,7 @@ def get_args_parser():
     parser.add_argument('--output_dir', default="./output", type=str, help='Path to save logs and checkpoints.')
     parser.add_argument('--saveckp_freq', default=20, type=int, help='Save checkpoint every x epochs.')
     parser.add_argument('--seed', default=42, type=int, help='Random seed.')
-    parser.add_argument('--num_workers', default=4, type=int, help='Number of data loading workers per GPU.')
+    parser.add_argument('--num_workers', default=2, type=int, help='Number of data loading workers per GPU.')
     parser.add_argument("--dist_url", default="env://", type=str, help="""url used to set up
         distributed training; see https://pytorch.org/docs/stable/distributed.html""")
     # parser.add_argument('--port', default=29507, type=int, help='Port used for Dist training')

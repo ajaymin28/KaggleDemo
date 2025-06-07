@@ -1,0 +1,22 @@
+
+# Model configuration
+n_classes: 5          # Number of output classes
+image_size: 224        # Input image size
+num_domains: 2         # Number of domains for adversarial training
+adv_training: false    # Whether to use adversarial training
+
+DEBUG: false           # Debug prints
+
+# Training configuration
+use_fp16: false        # Use fp16 mixed precision during training
+n_epochs: 10           # Number of training epochs
+batch_size: 32         # Train batch size
+learning_rate: 1e-3   # Learning rate
+
+domainnet_classes: ["airplane", "ant", "apple", "banana", "baseball", "beach", "bird", "book", "brain", "cake"]
+
+# Adv Training Config
+adv_alpha: 0.5  # Grad Reverse
+schedule_alpha: true
+alpha_smoothing_factor: -10
+adv_lambda: 2  # domain desc loss weight

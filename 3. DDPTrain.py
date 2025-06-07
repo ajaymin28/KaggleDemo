@@ -5,7 +5,7 @@ from tqdm import tqdm
 import torchvision
 import torch.nn as nn
 
-from utils.models import MyNet
+from models.models import MyNet
 
 import wandb
 import os
