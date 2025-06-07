@@ -3,13 +3,10 @@ import numpy as np
 from utils.datasets import DomainNetDataset
 from utils.transforms import mynet_transform
 from torch.utils.data import DataLoader, random_split
-import torchvision
 from models.models import MyNet
 import torch.nn as nn
 from torch.optim import Adam
 import torch
-from utils.config import ModelConfig
-import yaml
 from utils.config import load_config, parse_args
 from utils.utilities import timeit,is_wandb_logged_in
 import os

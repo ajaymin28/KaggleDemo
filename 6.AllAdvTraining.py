@@ -3,13 +3,10 @@ import numpy as np
 from utils.datasets import DomainNetDataset
 from utils.transforms import mynet_transform
 from torch.utils.data import DataLoader, random_split
-import torchvision
 from models.MMD import DomainAdaptModel, mmd_loss
 import torch.nn as nn
 from torch.optim import Adam
 import torch
-from utils.config import ModelConfig
-import yaml
 from utils.config import load_config, parse_args
 from utils.utilities import timeit,is_wandb_logged_in
 import os
@@ -95,6 +92,12 @@ def eval_model(model, loader, device, image_cls_loss, domain_loss, alpha=0):
 @timeit
 def train():
     len_dataloader = len(train_loader)
+
+    patience = getattr(cfg, "early_stop_patience", 10)
+    min_delta = getattr(cfg, "early_stop_min_delta", 1e-4)
+    best_val_loss = float('inf')
+    epochs_no_improve = 0
+    best_weights = None
 
     for epoch in range(cfg.n_epochs):
         model.train()
@@ -260,7 +263,7 @@ def train():
                 f"ClsAcc: {train_cls_acc:.3f}"
             )
 
-        if epoch % 2 == 0 or epoch==cfg.n_epochs:
+        if epoch % 2 == 0 or epoch+1==cfg.n_epochs:
             val_results = eval_model(model, val_loader, device, image_cls_loss, domain_loss, alpha=0)
             test_results = eval_model(model, test_loader, device, image_cls_loss, domain_loss, alpha=0)
 
@@ -291,12 +294,26 @@ def train():
                     f"ClsAcc: {test_results[2]:.3f}"
                 )
 
+            # --- Early Stopping Logic ---
+            val_loss = val_results[0]
+            if val_loss < best_val_loss - min_delta:
+                best_val_loss = val_loss
+                epochs_no_improve = 0
+                best_weights = {k: v.cpu().clone() for k, v in model.state_dict().items()}  # Save best weights
+            else:
+                epochs_no_improve += 1
+                if epochs_no_improve >= patience:
+                    print(f"\nEarly stopping triggered at epoch {epoch+1}. Best val loss: {best_val_loss:.4f}")
+                    if best_weights is not None:
+                        model.load_state_dict(best_weights)
+                    break
+                    
+                # TODO SAVE BEST MODEL
+
         if isWandbLoggedIn:
             wandb.log(log_dict)
 
         print(msg)
-
-
 
 if __name__=="__main__":
     
