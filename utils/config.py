@@ -28,6 +28,9 @@ class ModelConfig(BaseModel):
     alpha_smoothing_factor: float = Field(-10.0, description="alpha smoothing factor")
     adv_lambda: float = Field(0.5, description="domain desc loss weight")
 
+    # logging
+    wandb_project: str = Field("domain_adv_training_domainnet", description="project name")
+
     # class Config:
     #     extra = "forbid"   # Raises error on unexpected fields for strictness
 
@@ -56,6 +59,8 @@ def parse_args():
     parser.add_argument("--adv_lambda", type=float)
     parser.add_argument("--TRAIN_DOMAINS", nargs="+", type=str, help="Training domains")
     parser.add_argument("--TEST_DOMAINS", nargs="+", type=str, help="Test domains")
+
+    parser.add_argument("--wandb_project", type=str)
 
     args = parser.parse_args()
     return args

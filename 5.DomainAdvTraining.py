@@ -11,7 +11,9 @@ import torch
 from utils.config import ModelConfig
 import yaml
 from utils.config import load_config, parse_args
-from utils.utilities import timeit
+from utils.utilities import timeit,is_wandb_logged_in
+import os
+import wandb
 
 def eval_model(model, loader, device, image_cls_loss, domain_loss, alpha=0):
     model.eval()
@@ -115,7 +117,18 @@ def train():
         if cfg.adv_training: 
             train_dom_acc = train_dom_correct / train_total
 
+        log_dict = {
+            "epoch": epoch + 1,
+            "train/img_loss": avg_train_img_loss,
+            "train/cls_acc": train_cls_acc,
+        }
+
         if cfg.adv_training:
+            log_dict.update({
+                "train/dom_loss": avg_train_dom_loss,
+                "train/dom_acc": train_dom_acc,
+                "train_alpha": alpha
+            })
             msg = (
                 f"Epoch {epoch+1}: "
                 f"Train ImgLoss: {avg_train_img_loss:.4f}, DomLoss: {avg_train_dom_loss:.4f}, "
@@ -132,7 +145,22 @@ def train():
             val_results = eval_model(model, val_loader, device, image_cls_loss, domain_loss, alpha=0)
             test_results = eval_model(model, test_loader, device, image_cls_loss, domain_loss, alpha=0)
 
+            log_dict.update({
+                "val/img_loss": val_results[0],
+                "val/cls_acc": val_results[2],
+                "test/img_loss": test_results[0],
+                "test/cls_acc": test_results[2],
+            })
+
             if cfg.adv_training:
+
+                log_dict.update({
+                    "val/dom_loss": val_results[1],
+                    "val/dom_acc": val_results[3],
+                    "test/dom_loss": test_results[1],
+                    "test/dom_acc": test_results[3],
+                })
+
                 msg += (
                     f" | Val ImgLoss: {val_results[0]:.4f}, DomLoss: {val_results[1]:.4f}, "
                     f"ClsAcc: {val_results[2]:.3f}, DomAcc: {val_results[3]:.3f}"
@@ -146,7 +174,9 @@ def train():
                     f" | Test ImgLoss: {test_results[0]:.4f}, "
                     f"ClsAcc: {test_results[2]:.3f}"
                 )
-
+        
+        if isWandbLoggedIn:
+            wandb.log(log_dict)
 
         print(msg)
 
@@ -159,6 +189,14 @@ if __name__=="__main__":
 
     f_labels = cfg.domainnet_classes[:cfg.n_classes]
     print(f_labels)
+
+    wandb_api_key = os.environ.get("WANDB_API_KEY")
+    if wandb_api_key is None:
+        print("WANDB_API_KEY not found in Kaggle Secrets.")
+    else:
+        wandb.login(key=wandb_api_key)
+
+    isWandbLoggedIn = is_wandb_logged_in()
 
     dataset_train = DomainNetDataset(
         root_dir=cfg.data_path,

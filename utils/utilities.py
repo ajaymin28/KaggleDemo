@@ -230,3 +230,16 @@ Copied from ENDs
 https://github.com/ajaymin28/DinIE/blob/main/utils2/utils.py
 
 """
+
+def is_wandb_logged_in():
+    import os
+    import wandb
+    # Check environment
+    if not os.environ.get("WANDB_API_KEY"):
+        try:
+            # Try the API call
+            _ = wandb.Api()
+            return True
+        except Exception:
+            return False
+    return True
