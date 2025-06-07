@@ -242,8 +242,8 @@ if __name__=="__main__":
     test_loader  = DataLoader(dataset_test, batch_size=cfg.batch_size, shuffle=False, num_workers=0)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    domain_loss = nn.CrossEntropyLoss()
-    image_cls_loss = nn.CrossEntropyLoss()
+    domain_loss = nn.NLLLoss()
+    image_cls_loss = nn.NLLLoss()
 
     model = MyNet(cfg).to(device)
     
