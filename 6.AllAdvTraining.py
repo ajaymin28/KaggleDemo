@@ -30,12 +30,12 @@ def eval_model(model, loader, device, image_cls_loss, domain_loss, alpha=0):
             cls_labels = data["label"].to(device)
             domains = data["domain"].to(device)
 
-            if cfg.domain_method == "cdan":
-                cls_pred_x, base_feat, domain_cls_pred = model(
-                    imgs, alpha, class_prob=torch.softmax(model(imgs, alpha)[0], dim=1)
-                )
-            else:
-                cls_pred_x, base_feat, domain_cls_pred = model(imgs, alpha)
+            # if cfg.domain_method == "cdan":
+            #     cls_pred_x, base_feat, domain_cls_pred = model(
+            #         imgs, alpha, class_prob=torch.softmax(model(imgs, alpha)[0], dim=1)
+            #     )
+            # else:
+            cls_pred_x, base_feat, domain_cls_pred = model(imgs, alpha)
 
             # === Classification loss/acc only for source domain ===
             if cfg.domain_method in ["dann", "cdan", "mmd"]:
@@ -118,12 +118,10 @@ def train():
             optimizer.zero_grad()
             if cfg.use_fp16:
                 with autocast(device_type="cuda"):
-                    if cfg.domain_method == "cdan":
-                        cls_pred_x, base_feat, domain_cls_pred = model(
-                            t_img, alpha, class_prob=torch.softmax(model(t_img, alpha)[0], dim=1)
-                        )
-                    else:
-                        cls_pred_x, base_feat, domain_cls_pred = model(t_img, alpha)
+                    # if cfg.domain_method == "cdan":
+                    #     cls_pred_x, base_feat, domain_cls_pred = model(t_img, alpha)
+                    # else:
+                    cls_pred_x, base_feat, domain_cls_pred = model(t_img, alpha)
 
                     # === Classification loss/acc only for source domain ===
                     if cfg.domain_method in ["dann", "cdan", "mmd"]:
@@ -165,12 +163,10 @@ def train():
                     scaler.step(optimizer)
                     scaler.update()
             else:
-                if cfg.domain_method == "cdan":
-                    cls_pred_x, base_feat, domain_cls_pred = model(
-                        t_img, alpha, class_prob=torch.softmax(model(t_img, alpha)[0], dim=1)
-                    )
-                else:
-                    cls_pred_x, base_feat, domain_cls_pred = model(t_img, alpha)
+                # if cfg.domain_method == "cdan":
+                #     cls_pred_x, base_feat, domain_cls_pred = model(t_img, alpha)
+                # else:
+                cls_pred_x, base_feat, domain_cls_pred = model(t_img, alpha)
 
                 # === Classification loss/acc only for source domain ===
                 if cfg.domain_method in ["dann", "cdan", "mmd"]:

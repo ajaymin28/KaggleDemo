@@ -94,9 +94,11 @@ class DomainAdaptModel(nn.Module):
         feat = self.feat_head(feat)
         class_logits = self.classifier(feat)
 
-        if self.method == "cdan" and class_prob is not None:
-            fused = torch.bmm(class_prob.unsqueeze(2), feat.unsqueeze(1)).view(x.size(0), -1)
-            domain_input = fused
+        if self.method == "cdan":
+            if class_prob is None:
+                class_prob = torch.softmax(class_logits, dim=1)
+                fused = torch.bmm(class_prob.unsqueeze(2), feat.unsqueeze(1)).view(x.size(0), -1)
+                domain_input = fused
         else:
             domain_input = feat
 
