@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 class ModelConfig(BaseModel):
     n_classes: int = Field(10, description="Number of output classes")
@@ -14,7 +15,7 @@ class ModelConfig(BaseModel):
     batch_size: int = Field(32, description="train batch size")
     learning_rate: float = Field(1e-3, description="train batch size")
 
-    domainnet_classes: list = Field(["airplane", "ant", "apple"], "domain net classes to train")
+    domainnet_classes: List[str] = Field(default_factory=lambda: ["airplane", "ant", "apple"], description="List of class names")
 
     # Adv Training Config
     adv_alpha: float = Field(0.5, description="Grad Reverse factor")

@@ -13,7 +13,7 @@ n_epochs: 10           # Number of training epochs
 batch_size: 32         # Train batch size
 learning_rate: 1e-3   # Learning rate
 
-domainnet_classes: ["airplane", "ant", "apple", "banana", "baseball", "beach", "bird", "book", "brain", "cake"]
+domainnet_classes: [airplane, ant, apple, banana, baseball, beach, bird, book, brain, cake]
 
 # Adv Training Config
 adv_alpha: 0.5  # Grad Reverse
