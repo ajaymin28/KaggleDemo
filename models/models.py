@@ -42,7 +42,8 @@ class MyNet(nn.Module):
         )
 
         self.cls_head = nn.Sequential(
-            nn.Linear(512, n_classes)
+            nn.Linear(512, n_classes),
+            nn.LogSoftmax()
         )
         self.domain_desc = DomainDiscriminator(embed_dim=512,num_domains=num_domains)
 

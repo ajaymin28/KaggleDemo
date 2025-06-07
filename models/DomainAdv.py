@@ -36,8 +36,11 @@ class DomainDiscriminator(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.1),
         )
-        self.classifier = nn.Linear(embed_dim, num_domains)  # Predict subject
-    
+        self.classifier = nn.Sequential(
+            nn.Linear(embed_dim, num_domains),  # Predict subject
+            nn.LogSoftmax()
+        ) 
+        
     def forward(self, x, alpha=None):
         if alpha is None: 
             alpha = self.alpha
