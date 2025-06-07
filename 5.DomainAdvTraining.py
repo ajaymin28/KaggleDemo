@@ -10,7 +10,7 @@ from torch.optim import Adam
 import torch
 from utils.config import ModelConfig
 import yaml
-
+from utils.config import load_config, parse_args
 from utils.utilities import timeit
 
 def eval_model(model, loader, device, image_cls_loss, domain_loss, alpha=0):
@@ -153,21 +153,16 @@ def train():
 
 if __name__=="__main__":
     
-    with open("config/mynet.yaml") as f:
-        data = yaml.safe_load(f)
-    cfg = ModelConfig(**data)
-
+    args = parse_args()
+    cfg = load_config(args)
     cfg.n_classes = 10
 
     f_labels = cfg.domainnet_classes[:cfg.n_classes]
     print(f_labels)
 
-    TRAIN_DOMAINS = ["clipart", "painting"]
-    TEST_DOMAINS = ["sketch"]
-
     dataset_train = DomainNetDataset(
-        root_dir="/kaggle/input/domainnet/DomainNet",
-        domains=TRAIN_DOMAINS,
+        root_dir=cfg.data_path,
+        domains=cfg.TRAIN_DOMAINS,
         split="train",
         transform=mynet_transform,
         classes=f_labels
@@ -182,8 +177,8 @@ if __name__=="__main__":
 
     # for a specific set of classes only
     dataset_test = DomainNetDataset(
-        root_dir="/kaggle/input/domainnet/DomainNet",
-        domains=TEST_DOMAINS,
+        root_dir=cfg.data_path,
+        domains=cfg.TEST_DOMAINS,
         split="test",
         classes=f_labels,
         transform=mynet_transform,

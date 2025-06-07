@@ -1,5 +1,6 @@
 
 # Model configuration
+data_path: "/kaggle/input/domainnet/DomainNet"
 n_classes: 5          # Number of output classes
 image_size: 224        # Input image size
 num_domains: 2         # Number of domains for adversarial training
@@ -14,6 +15,8 @@ batch_size: 32         # Train batch size
 learning_rate: 1e-3   # Learning rate
 
 domainnet_classes: [airplane, ant, apple, banana, baseball, beach, bird, book, brain, cake]
+TRAIN_DOMAINS: [clipart, painting]
+TEST_DOMAINS: [sketch]
 
 # Adv Training Config
 adv_alpha: 0.5  # Grad Reverse
