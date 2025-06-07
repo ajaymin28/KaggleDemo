@@ -193,10 +193,15 @@ if __name__=="__main__":
     wandb_api_key = os.environ.get("WANDB_API_KEY")
     if wandb_api_key is None:
         print("WANDB_API_KEY not found in Kaggle Secrets.")
+        if cfg.wandb_apikey!="":
+            wandb.login(key=cfg.wandb_apikey)
+        else:
+            print("WANDB_API_KEY not found in config/args")
     else:
         wandb.login(key=wandb_api_key)
 
     isWandbLoggedIn = is_wandb_logged_in()
+    print(f"wandb logged in? [{isWandbLoggedIn}]")
 
     dataset_train = DomainNetDataset(
         root_dir=cfg.data_path,

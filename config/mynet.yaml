@@ -25,3 +25,4 @@ alpha_smoothing_factor: -10
 adv_lambda: 2  # domain desc loss weight
 
 wandb_project: "domain_adv_training_domainnet"
+wandb_api_key: ""

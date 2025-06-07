@@ -30,6 +30,7 @@ class ModelConfig(BaseModel):
 
     # logging
     wandb_project: str = Field("domain_adv_training_domainnet", description="project name")
+    wandb_apikey: str = Field("", description="api key for wandb")
 
     # class Config:
     #     extra = "forbid"   # Raises error on unexpected fields for strictness
@@ -61,6 +62,7 @@ def parse_args():
     parser.add_argument("--TEST_DOMAINS", nargs="+", type=str, help="Test domains")
 
     parser.add_argument("--wandb_project", type=str)
+    parser.add_argument("--wandb_apikey", type=str)
 
     args = parser.parse_args()
     return args
