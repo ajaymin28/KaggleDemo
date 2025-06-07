@@ -27,6 +27,7 @@ class ModelConfig(BaseModel):
     schedule_alpha: bool = Field(True, description="schedule alpha during training based on epochs")
     alpha_smoothing_factor: float = Field(-10.0, description="alpha smoothing factor")
     adv_lambda: float = Field(0.5, description="domain desc loss weight")
+    domain_method: str = Field("dann", description="dannm,cdan,mmd")  
 
     # logging
     wandb_project: str = Field("domain_adv_training_domainnet", description="project name")
@@ -54,10 +55,13 @@ def parse_args():
     parser.add_argument("--batch_size", type=int)
     parser.add_argument("--learning_rate", type=float)
     parser.add_argument("--domainnet_classes", nargs="+", type=str)
+    
     parser.add_argument("--adv_alpha", type=float)
     parser.add_argument("--schedule_alpha", type=lambda x: x.lower() == "true")
     parser.add_argument("--alpha_smoothing_factor", type=float)
     parser.add_argument("--adv_lambda", type=float)
+    parser.add_argument("--domain_method", type=str, help="dannm,cdan,mmd")
+
     parser.add_argument("--TRAIN_DOMAINS", nargs="+", type=str, help="Training domains")
     parser.add_argument("--TEST_DOMAINS", nargs="+", type=str, help="Test domains")
 

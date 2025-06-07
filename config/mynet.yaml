@@ -23,6 +23,7 @@ adv_alpha: 0.5  # Grad Reverse
 schedule_alpha: true
 alpha_smoothing_factor: -10
 adv_lambda: 2  # domain desc loss weight
+domain_method: "dann"
 
 wandb_project: "domain_adv_training_domainnet"
 wandb_api_key: ""
