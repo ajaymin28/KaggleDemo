@@ -63,7 +63,7 @@ def parse_args():
     parser.add_argument("--schedule_alpha", type=lambda x: x.lower() == "true")
     parser.add_argument("--alpha_smoothing_factor", type=float)
     parser.add_argument("--adv_lambda", type=float)
-    parser.add_argument("--domain_method", type=str, help="dannm,cdan,mmd")
+    parser.add_argument("--domain_method", type=str, help="dann,cdan,mmd")
 
     parser.add_argument("--TRAIN_DOMAINS", nargs="+", type=str, help="Training domains")
     parser.add_argument("--TEST_DOMAINS", nargs="+", type=str, help="Test domains")
