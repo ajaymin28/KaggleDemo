@@ -249,7 +249,7 @@ def train():
             log_dict.update({
                 "train/dom_loss": avg_train_dom_loss,
                 "train/dom_acc": train_dom_acc,
-                "train_alpha": alpha
+                "train/alpha": alpha
             })
             msg = (
                 f"Epoch {epoch+1}: "
@@ -362,7 +362,7 @@ if __name__=="__main__":
     n_val = len(dataset_train) - n_train
     train_dataset, val_dataset = random_split(dataset_train, [n_train, n_val])
     train_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=2)
-    val_loader   = DataLoader(val_dataset, batch_size=cfg.batch_size, shuffle=False, num_workers=0)
+    val_loader   = DataLoader(val_dataset, batch_size=cfg.batch_size, shuffle=False, num_workers=2)
 
     # for a specific set of classes only
     dataset_test = DomainNetDataset(

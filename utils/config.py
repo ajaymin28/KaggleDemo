@@ -33,7 +33,7 @@ class ModelConfig(BaseModel):
     wandb_project: str = Field("domain_adv_training_domainnet", description="project name")
     wandb_apikey: str = Field("", description="api key for wandb")
 
-    early_stop_patience: int = Field(10, description="early_stop_patience")
+    early_stop_patience: int = Field(5, description="early_stop_patience")
     early_stop_min_delta: float = Field(1e-4, description="early_stop_min_delta")
 
     # class Config:
