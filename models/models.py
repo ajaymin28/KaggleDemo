@@ -37,21 +37,19 @@ class MyNet(nn.Module):
         self.features_head = nn.Sequential(
             nn.Flatten(),
             nn.Linear(flat_out.size(-1), 512),
+            nn.BatchNorm1d(num_features=512),
             nn.ReLU(),
             nn.Dropout(0.2)
         )
 
         self.cls_head = nn.Sequential(
             nn.Linear(512, n_classes),
-            nn.LogSoftmax()
+            # nn.LogSoftmax()
         )
-        self.domain_desc = DomainDiscriminator(embed_dim=512,num_domains=num_domains)
+        self.domain_desc = DomainDiscriminator(in_dim=512,num_domains=num_domains)
 
         del dummy_input, conv_out, flat_out
 
-    
-    def residual(self, x):
-        pass
 
     def getheadFeatures(self, x):
         head_f = self.features_head(x)
@@ -70,7 +68,7 @@ class MyNet(nn.Module):
         return self.conv_model(x)
 
     
-    def forward(self, x,alpha=1):
+    def forward(self, x,alpha=0.5):
         if self.DEBUG: print(f"input shape: {x.shape}")
         domain_cls_pred, domain_features = [],[]
 
@@ -80,5 +78,5 @@ class MyNet(nn.Module):
 
         if self.adv_training:
             domain_cls_pred, domain_features = self.domain_desc(base_feat, alpha)
-
-        return cls_pred_x,base_feat,domain_cls_pred,domain_features
+        
+        return cls_pred_x,base_feat,domain_cls_pred

@@ -4,6 +4,7 @@ from utils.datasets import DomainNetDataset
 from utils.transforms import mynet_transform
 from torch.utils.data import DataLoader, random_split
 from models.MMD import DomainAdaptModel, mmd_loss
+from models.models import MyNet
 import torch.nn as nn
 from torch.optim import Adam
 import torch
@@ -14,7 +15,7 @@ import wandb
 from utils.config import ModelConfig
 
 
-def eval_model(model, loader, device, image_cls_loss, domain_loss, alpha=0):
+def eval_model(model, loader, device, alpha=0):
     model.eval()
     val_img_loss = 0
     val_dom_loss = 0
@@ -46,44 +47,6 @@ def eval_model(model, loader, device, image_cls_loss, domain_loss, alpha=0):
             val_dom_correct += dom_correct
 
             val_total += val_img_loss + dom_loss
-
-
-            # # === Classification loss/acc only for source domain ===
-            # if cfg.domain_method in ["dann", "cdan", "mmd"]:
-            #     src_mask = (domains_labels == 0)
-            #     if src_mask.sum() > 0:
-            #         iloss = image_cls_loss(cls_pred_x[src_mask], cls_labels[src_mask])
-            #         img_loss += iloss.item() * src_mask.sum().item()
-            #         cls_correct += (cls_pred_x[src_mask].argmax(1) == cls_labels[src_mask]).sum().item()
-            #         total += src_mask.sum().item()
-            #     else:
-            #         iloss = torch.tensor(0.0, device=imgs.device)
-            # else:
-            #     img_loss += image_cls_loss(cls_pred_x, cls_labels)
-            #     cls_correct += (cls_pred_x.argmax(1) == cls_labels).sum().item()
-            #     total += cls_pred_x.size(0)
-
-            # # === Domain/MMD Loss ===
-            # if cfg.domain_method in ["dann", "cdan"]:
-            #     dloss = domain_loss(domain_cls_pred, domains_labels)
-            #     dom_loss += dloss.item() * imgs.size(0)
-            #     dom_correct += (domain_cls_pred.argmax(1) == domains_labels).sum().item()
-            # elif cfg.domain_method == "mmd":
-            #     unique_domains = domains_labels.unique()
-            #     mmd_batch = 0
-            #     count = 0
-            #     for i, dom_a in enumerate(unique_domains):
-            #         for dom_b in unique_domains[i+1:]:
-            #             idx_a = (domains_labels == dom_a)
-            #             idx_b = (domains_labels == dom_b)
-            #             if idx_a.sum() > 0 and idx_b.sum() > 0:
-            #                 mmd_batch += mmd_loss(val_base_feat[idx_a], val_base_feat[idx_b])
-            #                 count += 1
-            #     if count > 0:
-            #         mmd_batch = mmd_batch / count
-            #     else:
-            #         mmd_batch = torch.tensor(0.0, device=imgs.device)
-            #     mmd_loss_total += mmd_batch.item() * imgs.size(0)
 
     
     # Classification accuracy
@@ -275,8 +238,8 @@ def train():
             )
 
         if epoch % 2 == 0 or epoch+1==cfg.n_epochs:
-            val_results = eval_model(model, val_loader, device, image_cls_loss, domain_loss, alpha=0)
-            test_results = eval_model(model, test_loader, device, image_cls_loss, domain_loss, alpha=0)
+            val_results = eval_model(model, val_loader, device, alpha=0)
+            test_results = eval_model(model, test_loader, device, alpha=0)
 
             log_dict.update({
                 "val/total_loss": val_results[4],
@@ -334,26 +297,29 @@ if __name__=="__main__":
     cfg = load_config(args)
     print(cfg)
 
+    cfg.num_domains = len(cfg.TRAIN_DOMAINS)
+
     f_labels = cfg.domainnet_classes[:cfg.n_classes]
     print(f_labels)
 
-    wandb_api_key = os.environ.get("WANDB_API_KEY")
-    if wandb_api_key is None:
-        print("WANDB_API_KEY not found in Kaggle Secrets.")
-        if cfg.wandb_apikey!="":
-            wandb.login(key=cfg.wandb_apikey)
-        else:
-            try:
-                from kaggle_secrets import UserSecretsClient
-                user_secrets = UserSecretsClient()
-                wandb_api_key = user_secrets.get_secret("WANDB_API_KEY")
-                wandb.login(key=wandb_api_key)
-            except:
-                print("WANDB_API_KEY not found in config/args/kaggle sec")
-    else:
-        wandb.login(key=wandb_api_key)
+    # wandb_api_key = os.environ.get("WANDB_API_KEY")
+    # if wandb_api_key is None:
+    #     print("WANDB_API_KEY not found in Kaggle Secrets.")
+    #     if cfg.wandb_apikey!="":
+    #         wandb.login(key=cfg.wandb_apikey)
+    #     else:
+    #         try:
+    #             from kaggle_secrets import UserSecretsClient
+    #             user_secrets = UserSecretsClient()
+    #             wandb_api_key = user_secrets.get_secret("WANDB_API_KEY")
+    #             wandb.login(key=wandb_api_key)
+    #         except:
+    #             print("WANDB_API_KEY not found in config/args/kaggle sec")
+    # else:
+    #     wandb.login(key=wandb_api_key)
 
-    isWandbLoggedIn = is_wandb_logged_in()
+    # isWandbLoggedIn = is_wandb_logged_in()
+    isWandbLoggedIn = False
     if isWandbLoggedIn:
         print(f"wandb logged in...")
         wandb.init(
@@ -391,7 +357,8 @@ if __name__=="__main__":
     domain_loss = nn.CrossEntropyLoss().to(device)
     image_cls_loss = nn.CrossEntropyLoss().to(device)
 
-    model = DomainAdaptModel(cfg).to(device)
+    # model = DomainAdaptModel(cfg).to(device)
+    model = MyNet(cfg).to(device)
     
     optimizer = Adam(model.parameters(), lr=cfg.learning_rate)
     scaler = GradScaler()
