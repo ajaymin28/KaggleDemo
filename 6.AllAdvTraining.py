@@ -302,24 +302,24 @@ if __name__=="__main__":
     f_labels = cfg.domainnet_classes[:cfg.n_classes]
     print(f_labels)
 
-    # wandb_api_key = os.environ.get("WANDB_API_KEY")
-    # if wandb_api_key is None:
-    #     print("WANDB_API_KEY not found in Kaggle Secrets.")
-    #     if cfg.wandb_apikey!="":
-    #         wandb.login(key=cfg.wandb_apikey)
-    #     else:
-    #         try:
-    #             from kaggle_secrets import UserSecretsClient
-    #             user_secrets = UserSecretsClient()
-    #             wandb_api_key = user_secrets.get_secret("WANDB_API_KEY")
-    #             wandb.login(key=wandb_api_key)
-    #         except:
-    #             print("WANDB_API_KEY not found in config/args/kaggle sec")
-    # else:
-    #     wandb.login(key=wandb_api_key)
+    wandb_api_key = os.environ.get("WANDB_API_KEY")
+    if wandb_api_key is None:
+        print("WANDB_API_KEY not found in Kaggle Secrets.")
+        if cfg.wandb_apikey!="":
+            wandb.login(key=cfg.wandb_apikey)
+        else:
+            try:
+                from kaggle_secrets import UserSecretsClient
+                user_secrets = UserSecretsClient()
+                wandb_api_key = user_secrets.get_secret("WANDB_API_KEY")
+                wandb.login(key=wandb_api_key)
+            except:
+                print("WANDB_API_KEY not found in config/args/kaggle sec")
+    else:
+        wandb.login(key=wandb_api_key)
 
-    # isWandbLoggedIn = is_wandb_logged_in()
-    isWandbLoggedIn = False
+    isWandbLoggedIn = is_wandb_logged_in()
+    # isWandbLoggedIn = False
     if isWandbLoggedIn:
         print(f"wandb logged in...")
         wandb.init(
