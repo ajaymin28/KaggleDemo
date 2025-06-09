@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from models.DomainAdv import DomainDiscriminator
+from models.DomainAdv import DomainDiscriminator, grad_reverse
 from utils.config import ModelConfig
 
 class MyNet(nn.Module):
@@ -77,6 +77,6 @@ class MyNet(nn.Module):
         cls_pred_x = self.getClassification(base_feat)
 
         if self.adv_training:
-            domain_cls_pred, domain_features = self.domain_desc(base_feat, alpha)
+            domain_cls_pred = self.domain_desc(grad_reverse(base_feat, alpha))
         
         return cls_pred_x,base_feat,domain_cls_pred
