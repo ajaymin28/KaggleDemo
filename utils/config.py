@@ -3,6 +3,15 @@ from typing import List
 import argparse
 import yaml
 
+class EEGModelConfig(BaseModel):
+    eeg_dataset_path: str = Field("./data/spampinato/eeg/eeg_signals_raw_with_mean_std.pth", description="Path to eeg data")
+    dataset_split: str = Field("./data/spampinato/eeg/block_splits_by_image_all.pth", description="Path to split data")
+    imagesRoot: str= Field("./data/spampinato/images/imageNet_images", description="Path to image data")
+
+    time_low: int = Field(20, description="lower bound for eeg data to clip") 
+    time_high: int = Field(480, description="upper bound for eeg data to clip") 
+
+
 class ModelConfig(BaseModel):
     data_path: str = Field("/kaggle/input/domainnet/DomainNet", description="Path to data")
     n_classes: int = Field(10, description="Number of output classes")

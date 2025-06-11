@@ -177,6 +177,8 @@ def train():
                     train_dom_loss += dom_loss
                     train_dom_correct += dom_correct
                     train_dom_total += dom_total
+
+                    total_loss = img_loss + dom_loss 
                     
 
                     scaler.scale(total_loss).backward()

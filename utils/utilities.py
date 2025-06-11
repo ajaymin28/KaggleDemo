@@ -243,3 +243,15 @@ def is_wandb_logged_in():
         except Exception:
             return False
     return True
+
+def config_to_dict(obj):
+    # Get all relevant attributes (class + instance, skip dunder and callables)
+    keys = [
+        k for k in set(obj.__class__.__dict__.keys()).union(vars(obj).keys())
+        if not k.startswith("__") and not callable(getattr(obj, k, None))
+    ]
+    def to_serializable(v):
+        if isinstance(v, torch.device):
+            return str(v)
+        return v
+    return {k: to_serializable(getattr(obj, k)) for k in keys}

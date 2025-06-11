@@ -28,21 +28,6 @@ class DomainDiscriminator(nn.Module):
     def forward(self, x):
         return self.head(x)
 
-# MMD Loss
-def gaussian_kernel(x, y, sigma=1.0):
-    x = x.unsqueeze(1)
-    y = y.unsqueeze(0)
-    diff = x - y
-    return torch.exp(- (diff ** 2).sum(2) / (2 * sigma ** 2))
-
-def mmd_loss(source, target, sigma=1.0):
-    K_ss = gaussian_kernel(source, source, sigma).mean()
-    K_tt = gaussian_kernel(target, target, sigma).mean()
-    K_st = gaussian_kernel(source, target, sigma).mean()
-    return K_ss + K_tt - 2 * K_st
-
-
-
 
 class PretrainedResNetEncoder(nn.Module):
     def __init__(self, backbone='resnet18', pretrained=True, trainable_layers=2):
