@@ -78,19 +78,24 @@ def get_img_loss_acc(cls_pred_x, t_cls_labels, t_domain_labels, cfg: ModelConfig
     cls_correct = 0
     total =  0
 
-    if cfg.domain_method in ["dann", "cdan", "mmd"]:
-        # when adv training is done, do img cls only for one domain
-        src_mask = (t_domain_labels == 0)
-        if src_mask.sum() > 0:
-            img_loss = image_cls_loss(cls_pred_x[src_mask], t_cls_labels[src_mask])
-            img_loss = img_loss * src_mask.sum().item()
-            cls_correct += (cls_pred_x[src_mask].argmax(1) == t_cls_labels[src_mask]).sum().item()
-            total += src_mask.sum().item()
-    else:
-        # in non adv training compute img cls for all domains
-        img_loss = image_cls_loss(cls_pred_x, t_cls_labels)
-        cls_correct += (cls_pred_x.argmax(1) == t_cls_labels).sum().item()
-        total += t_cls_labels.size(0)
+    img_loss = image_cls_loss(cls_pred_x, t_cls_labels)
+    cls_correct += (cls_pred_x.argmax(1) == t_cls_labels).sum().item()
+    total += t_cls_labels.size(0)
+
+    # if cfg.domain_method in ["dann", "cdan", "mmd"]:
+    #     # when adv training is done, do img cls only for one domain
+    #     # src_mask = (t_domain_labels == 0)
+    #     # if src_mask.sum() > 0:
+    #     #     img_loss = image_cls_loss(cls_pred_x[src_mask], t_cls_labels[src_mask])
+    #     #     img_loss = img_loss * src_mask.sum().item()
+    #     #     cls_correct += (cls_pred_x[src_mask].argmax(1) == t_cls_labels[src_mask]).sum().item()
+    #     #     total += src_mask.sum().item()
+    #     img_loss = image_cls_loss(cls_pred_x, t_cls_labels)
+    # else:
+    #     # in non adv training compute img cls for all domains
+    #     img_loss = image_cls_loss(cls_pred_x, t_cls_labels)
+    #     cls_correct += (cls_pred_x.argmax(1) == t_cls_labels).sum().item()
+    #     total += t_cls_labels.size(0)
 
     # img_loss = img_loss/total        
 
