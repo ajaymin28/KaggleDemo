@@ -57,14 +57,14 @@ class MMDLoss(nn.Module):
 
     # MMD Loss
     @staticmethod
-    def gaussian_kernel(self,x, y, sigma=1.0):
+    def gaussian_kernel(x, y, sigma=1.0):
         x = x.unsqueeze(1)
         y = y.unsqueeze(0)
         diff = x - y
         return torch.exp(- (diff ** 2).sum(2) / (2 * sigma ** 2))
 
     @staticmethod
-    def mmd_loss(self,source, target, sigma=1.0):
+    def mmd_loss(source, target, sigma=1.0):
         K_ss = MMDLoss.gaussian_kernel(source, source, sigma).mean()
         K_tt = MMDLoss.gaussian_kernel(target, target, sigma).mean()
         K_st = MMDLoss.gaussian_kernel(source, target, sigma).mean()
