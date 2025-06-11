@@ -56,16 +56,18 @@ class MMDLoss(nn.Module):
         super().__init__()
 
     # MMD Loss
+    @staticmethod
     def gaussian_kernel(self,x, y, sigma=1.0):
         x = x.unsqueeze(1)
         y = y.unsqueeze(0)
         diff = x - y
         return torch.exp(- (diff ** 2).sum(2) / (2 * sigma ** 2))
 
+    @staticmethod
     def mmd_loss(self,source, target, sigma=1.0):
-        K_ss = self.gaussian_kernel(source, source, sigma).mean()
-        K_tt = self.gaussian_kernel(target, target, sigma).mean()
-        K_st = self.gaussian_kernel(source, target, sigma).mean()
+        K_ss = MMDLoss.gaussian_kernel(source, source, sigma).mean()
+        K_tt = MMDLoss.gaussian_kernel(target, target, sigma).mean()
+        K_st = MMDLoss.gaussian_kernel(source, target, sigma).mean()
         return K_ss + K_tt - 2 * K_st
 
     def forward(self, base_features, domain_labels):
@@ -80,7 +82,7 @@ class MMDLoss(nn.Module):
                 idx_a = (domain_labels == dom_a)
                 idx_b = (domain_labels == dom_b)
                 if idx_a.sum() > 0 and idx_b.sum() > 0:
-                    mmd_batch += self.mmd_loss(base_features[idx_a], base_features[idx_b])
+                    mmd_batch += MMDLoss.mmd_loss(base_features[idx_a], base_features[idx_b])
                     count += 1
         if count > 0:
             mmd_batch = mmd_batch / count

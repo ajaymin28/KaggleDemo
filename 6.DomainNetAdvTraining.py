@@ -3,7 +3,8 @@ import numpy as np
 from utils.datasets import DomainNetDataset
 from utils.transforms import mynet_transform
 from torch.utils.data import DataLoader, random_split
-from models.MMD import DomainAdaptModel, mmd_loss
+from models.MMD import DomainAdaptModel
+from utils.losses import MMDLoss
 from models.models import MyNet
 import torch.nn as nn
 from torch.optim import Adam
@@ -115,7 +116,7 @@ def get_domain_loss(domain_cls_pred, t_domain_labels, base_feat, cfg: ModelConfi
                 idx_a = (t_domain_labels == dom_a)
                 idx_b = (t_domain_labels == dom_b)
                 if idx_a.sum() > 0 and idx_b.sum() > 0:
-                    mmd_batch += mmd_loss(base_feat[idx_a], base_feat[idx_b])
+                    mmd_batch += MMDLoss.mmd_loss(base_feat[idx_a], base_feat[idx_b])
                     count += 1
         if count > 0:
             mmd_batch = mmd_batch / count
@@ -189,6 +190,7 @@ def train():
             else:
 
                 cls_pred_x, base_feat, domain_cls_pred = model(t_img, alpha)
+
                 img_loss, cls_correct, total = get_img_loss_acc(cls_pred_x, t_cls_labels,t_domain_labels,cfg)
                 train_img_loss += img_loss
                 train_cls_correct += cls_correct
