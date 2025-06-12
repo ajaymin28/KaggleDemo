@@ -91,3 +91,11 @@ class TrainConfig:
     wandb_apikey = ""
     wandb_project = "things_eeg_adv_training"
 
+    # Things DS attributes
+    NUM_CLASSES = 1654
+    TRAIN_SUBJECT_IDS = [1]
+    VALIDATION_SUBJECT_IDS = [1]
+    TRAIN_SESSION_IDS = [0,1]
+    VALIDATION_SESSION_IDS = [2]
+    ONE_SUBJECT_CLS = True
+

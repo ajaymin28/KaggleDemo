@@ -15,16 +15,102 @@ import wandb
 import os
 import pandas as pd
 
+import argparse
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+def get_train_config_parser():
+    parser = argparse.ArgumentParser(description="TrainConfig Arguments")
+
+    parser.add_argument("--local_epochs", type=int, default=100)
+    parser.add_argument("--batch_size", type=int, default=512)
+    parser.add_argument("--channels", type=int, default=63)
+    parser.add_argument("--time_points", type=int, default=250)
+    parser.add_argument("--sessions", type=int, default=4)
+
+    parser.add_argument("--mean_eeg_data", type=str2bool, default=False)
+    parser.add_argument("--keep_dim_after_mean", type=str2bool, default=False)
+    parser.add_argument("--cache_data", type=str2bool, default=True)
+
+    parser.add_argument("--image_feature_dim", type=int, default=768)
+    parser.add_argument("--num_subjects", type=int, default=1)
+    parser.add_argument("--load_pre_trained_models", type=str2bool, default=False)
+
+    parser.add_argument("--learning_rate", type=float, default=0.002)
+    parser.add_argument("--discriminator_lr", type=float, default=0.002)
+    parser.add_argument("--weight_decay", type=float, default=1e-5)
+    parser.add_argument("--latent_dim", type=int, default=768)
+    parser.add_argument("--dropout_rate", type=float, default=0.1)
+
+    parser.add_argument("--eeg_data_path", type=str, default=None)  # Default: global_config.EEG_DATA_PATH
+    parser.add_argument("--test_center_path", type=str, default=None)  # Default: global_config.TEST_CENTER_PATH
+    parser.add_argument("--model_save_base_dir", type=str, default=None)  # Default: global_config.MODEL_BASE_DIR
+    parser.add_argument("--data_base_dir", type=str, default=None)  # Default: global_config.DATA_BASE_DIR
+
+    parser.add_argument("--Contrastive_augmentation", type=str2bool, default=True)
+    parser.add_argument("--nSub", type=int, default=1)
+    parser.add_argument("--nSub_Contrastive", type=int, default=2)
+    parser.add_argument("--EEG_Augmentation", type=str2bool, default=False)
+    parser.add_argument("--Total_Subjects", type=int, default=2)
+    # parser.add_argument("--MultiSubject", type=str2bool, default=True)
+    parser.add_argument("--TestSubject", type=int, default=1)
+    parser.add_argument("--dnn", type=str, default="clip")
+
+    parser.add_argument("--lambda_adv", type=float, default=1.0)
+    parser.add_argument("--max_lambda_adv", type=float, default=2.0)
+    parser.add_argument("--enable_adv_training", type=str2bool, default=False)
+    parser.add_argument("--lambda_ortho", type=float, default=0.0001)
+    parser.add_argument("--alpha", type=float, default=0.0)
+
+    parser.add_argument("--log_test_data", type=str2bool, default=True)
+    parser.add_argument("--Train", type=str2bool, default=True)
+    parser.add_argument("--profile_code", type=str2bool, default=False)
+    parser.add_argument("--encoder_output_dim", type=int, default=768)
+    parser.add_argument("--wandb_apikey", type=str, default="")
+    parser.add_argument("--wandb_project", type=str, default="things_eeg_adv_training")
+
+    parser.add_argument("--NUM_CLASSES", type=int, default=1654)
+    parser.add_argument("--TRAIN_SUBJECT_IDS", nargs="+", type=int, default=[1],
+                        help="Space separated subject IDs for training, e.g. --TRAIN_SUBJECT_IDS 1 2 3")
+    parser.add_argument("--VALIDATION_SUBJECT_IDS", nargs="+", type=int, default=[1],
+                        help="Space separated subject IDs for validation")
+    parser.add_argument("--TRAIN_SESSION_IDS", nargs="+", type=int, default=[0,1],
+                        help="Space separated session IDs for training")
+    parser.add_argument("--VALIDATION_SESSION_IDS", nargs="+", type=int, default=[2],
+                        help="Space separated session IDs for validation")
+    parser.add_argument("--ONE_SUBJECT_CLS", type=str2bool, default=True,
+                        help="Set True to use only one subject's classification loss (as per DANN paper)")
+
+
+
+    return parser
+
+# Example usage:
+# parser = get_train_config_parser()
+# args = parser.parse_args()
+# print(args)
+
+
 if __name__=="__main__":
 
     ChangeNotes = """
         [06/11/2025][05:05PM]: Used session 0,1 of subject 1 to train and session 2 as validation, session samples are used seperately instead of mean.
-
+        [06/11/2025][05:05PM]: Changed time samples to 32 after conv1d.
     """
+
+    parser = get_train_config_parser()
+    cli_args = parser.parse_args()
 
 
     args = TrainConfig()
-
 
     args.batch_size = 512
     args.enable_adv_training = False
@@ -41,15 +127,22 @@ if __name__=="__main__":
     VALIDATION_SUBJECT_IDS = [1]
     TRAIN_SESSION_IDS = [0,1]  # upto 4 sessions for train and val set
     VALIDATION_SESSION_IDS = [2] # different sessions are used for train and val, dont use same as train since we are not splitting data from same sessions.
-
     ONE_SUBJECT_CLS = True # only one subject's cls loss will be done (as per DANN paper), not applicable for Non Adv Training.
+
+    # override CLI argument values
+    for key, value in vars(cli_args).items():
+        # Only set the attribute if it exists in TrainConfig, optional safety:
+        if hasattr(args, key):
+            print(f"setting: {key} -> {value}")
+            setattr(args, key, value)
+
 
     if args.enable_adv_training:
         # adv training possible when subjects are more than one
         assert args.num_subjects>=2 and len(set(TRAIN_SUBJECT_IDS))>=2
 
     try:
-        wandb.finish()
+        wandb.finish() # close existing run
     except Exception:
         pass
 
@@ -100,7 +193,7 @@ if __name__=="__main__":
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.learning_rate, betas=(0.5, 0.999))
     # loss_fn = torch.nn.CrossEntropyLoss().to(device)
-    loss_fn = ContrastiveLoss(temperature=0.07).to(device)
+    # loss_fn = ContrastiveLoss(temperature=0.07).to(device)
     domain_loss_fn =  torch.nn.CrossEntropyLoss().to(device)
     # domain_loss_fn = MMDLoss().to(device)
 
