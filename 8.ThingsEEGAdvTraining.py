@@ -20,7 +20,6 @@ if __name__=="__main__":
     ChangeNotes = """
         [06/11/2025][05:05PM]: Used session 0,1 of subject 1 to train and session 2 as validation, session samples are used seperately instead of mean.
 
-
     """
 
 
@@ -44,6 +43,10 @@ if __name__=="__main__":
     VALIDATION_SESSION_IDS = [2] # different sessions are used for train and val, dont use same as train since we are not splitting data from same sessions.
 
     ONE_SUBJECT_CLS = True # only one subject's cls loss will be done (as per DANN paper), not applicable for Non Adv Training.
+
+    if args.enable_adv_training:
+        # adv training possible when subjects are more than one
+        assert args.num_subjects>=2 and len(set(TRAIN_SUBJECT_IDS))>=2
 
     try:
         wandb.finish()

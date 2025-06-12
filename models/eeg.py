@@ -32,39 +32,39 @@ class EEGTSConv(nn.Module):
             nn.ELU()
         )
 
-        # self.time_conv = nn.Sequential(
-        #     nn.Conv1d(time,128, kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm1d(128),
-        #     nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
-        #     nn.ELU(),
-
-        #     nn.Conv1d(128,64, kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm1d(64),
-        #     nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
-        #     nn.ELU(),
-
-        #     nn.Conv1d(64,32, kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm1d(32),
-        #     nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
-        #     nn.ELU(),
-        # )
-
         self.time_conv = nn.Sequential(
-            nn.Conv1d(time,400, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm1d(400),
+            nn.Conv1d(time,128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(128),
             nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
             nn.ELU(),
 
-            nn.Conv1d(400,320, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm1d(320),
+            nn.Conv1d(128,64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(64),
             nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
             nn.ELU(),
 
-            nn.Conv1d(320,160, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm1d(160),
+            nn.Conv1d(64,32, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(32),
             nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
             nn.ELU(),
         )
+
+        # self.time_conv = nn.Sequential(
+        #     nn.Conv1d(time,400, kernel_size=3, stride=1, padding=1),
+        #     nn.BatchNorm1d(400),
+        #     nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
+        #     nn.ELU(),
+
+        #     nn.Conv1d(400,320, kernel_size=3, stride=1, padding=1),
+        #     nn.BatchNorm1d(320),
+        #     nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
+        #     nn.ELU(),
+
+        #     nn.Conv1d(320,160, kernel_size=3, stride=1, padding=1),
+        #     nn.BatchNorm1d(160),
+        #     nn.AvgPool1d(kernel_size=3,stride=1,padding=1),
+        #     nn.ELU(),
+        # )
 
         
         dummy_input = torch.rand((1,channels,time))

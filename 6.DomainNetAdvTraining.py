@@ -184,7 +184,7 @@ def train():
                     train_dom_correct += dom_correct
                     train_dom_total += dom_total
 
-                    total_loss = img_loss + dom_loss 
+                    total_loss = img_loss + dom_loss * cfg.adv_lambda 
                     
 
                     scaler.scale(total_loss).backward()
@@ -207,7 +207,7 @@ def train():
                 train_dom_correct += dom_correct
                 train_dom_total += dom_total
 
-                total_loss = img_loss + dom_loss 
+                total_loss = img_loss + dom_loss * cfg.adv_lambda
 
                 total_loss.backward()
                 optimizer.step()

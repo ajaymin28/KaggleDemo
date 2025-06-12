@@ -35,7 +35,7 @@ class ModelConfig(BaseModel):
     adv_alpha: float = Field(0.5, description="Grad Reverse factor")
     schedule_alpha: bool = Field(True, description="schedule alpha during training based on epochs")
     alpha_smoothing_factor: float = Field(-10.0, description="alpha smoothing factor")
-    adv_lambda: float = Field(0.5, description="domain desc loss weight")
+    adv_lambda: float = Field(1.0, description="domain desc loss weight")
     domain_method: str = Field("dann", description="dannm,cdan,mmd")  
 
     # logging
